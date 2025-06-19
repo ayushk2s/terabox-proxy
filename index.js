@@ -10,6 +10,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// 🔗 TeraBox Data Route
 app.post('/terabox', async (req, res) => {
   const { url } = req.body;
 
@@ -34,8 +35,33 @@ app.post('/terabox', async (req, res) => {
 
     res.json(response.data);
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    console.error('❌ Error fetching TeraBox data:', error.message);
     res.status(500).json({ error: 'Failed to fetch data' });
+  }
+});
+
+// 🖼️ Thumbnail Proxy Route
+app.get('/thumbnail', async (req, res) => {
+  const { url } = req.query;
+
+  if (!url) {
+    return res.status(400).send('Missing thumbnail URL');
+  }
+
+  try {
+    const response = await axios.get(url, {
+      responseType: 'stream',
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/137.0.0.0 Safari/537.36',
+      },
+    });
+
+    res.set(response.headers);
+    response.data.pipe(res);
+  } catch (error) {
+    console.error('❌ Error fetching thumbnail:', error.message);
+    res.status(500).send('Error fetching thumbnail');
   }
 });
 
